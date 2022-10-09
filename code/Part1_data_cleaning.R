@@ -11,7 +11,7 @@ library(randomForest)
 
 
 #data Cleaning
-data = read.csv("~/Desktop/303module2/BodyFat.csv")
+data = read.csv("BodyFat.csv")
 #check data
 data
 #remove 0 
