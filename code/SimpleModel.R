@@ -9,6 +9,8 @@ bodyfat_df <- read.csv("../data/BodyFat.csv")
 head(bodyfat_df)
 tail(bodyfat_df)
 
+summary(bodyfat_df)
+
 # Need to see if we can fix the 0 bodyfat by recalculating using "Siri's Equatio
 # Bodyfat% = 495/D - 450
 4.95/bodyfat_df$DENSITY[bodyfat_df$BODYFAT == 0] - 4.50
@@ -23,6 +25,8 @@ bodyfat_df$HEIGHT[bodyfat_df$HEIGHT == 29.5] <-
        bodyfat_df$ADIPOSITY[bodyfat_df$HEIGHT == 29.5])
 
 summary(bodyfat_df)
+hist(bodyfat_df$WEIGHT)
+hist(bodyfat_df$BODYFAT)
 
 # Create a simple model with BMI
 bmi_lm <- lm(BODYFAT ~ ADIPOSITY,data = bodyfat_df)
@@ -59,13 +63,17 @@ ggplot(bodyfat_df, aes(x=ABDOMEN)) + geom_histogram()
 # Removing point 39 because it is an outlier with high leverage
 bodyfat_df <- bodyfat_df[bodyfat_df$ABDOMEN <140,]
 
-waist_lm <- lm(BODYFAT ~ ABDOMEN,data = bodyfat_df)
-summary(waist_lm)
+bodyfat_df$ABDOMEN_in <- bodyfat_df$ABDOMEN * 0.393701
+
+waist_abd_lm <- lm(BODYFAT ~ ABDOMEN_in + WEIGHT,data = bodyfat_df)
+summary(waist_abd_lm)
 
 ggplot(bodyfat_df,aes(x=ABDOMEN,y=BODYFAT)) +
   geom_point(size=2, shape=20,color='blue') +
   geom_smooth(method=lm, se=FALSE,color='black')
 
+qqnorm(bodyfat$)
+qqnorm(body, main = 'Q-Q Plot for Normality', xlab = 'Theoretical Dist',
+       ylab = 'Sample dist', col = 'steelblue')
 
-plot(waist_lm)
-
+summary(bodyfat_df)
