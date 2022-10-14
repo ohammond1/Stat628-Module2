@@ -24,15 +24,73 @@ bodyfat_df$HEIGHT[bodyfat_df$HEIGHT == 29.5] <-
   sqrt(703*bodyfat_df$WEIGHT[bodyfat_df$HEIGHT == 29.5] / 
        bodyfat_df$ADIPOSITY[bodyfat_df$HEIGHT == 29.5])
 
+# Investigating the outlier in BMI and Abdomen
+ggplot(bodyfat_df, aes(x=ABDOMEN)) + geom_histogram()
+
+
+# Removing point 39 because it is an outlier with high leverage
+bodyfat_df <- bodyfat_df[bodyfat_df$ABDOMEN <140,]
+
 summary(bodyfat_df)
 hist(bodyfat_df$WEIGHT)
 hist(bodyfat_df$BODYFAT)
 
-# Create a simple model with BMI
-bmi_lm <- lm(BODYFAT ~ ADIPOSITY,data = bodyfat_df)
-summary(bmi_lm)
+# Data frame with all three and less combination names
+combinations <- c("BMI","Height","Ab","Waist","BMI/Weight","BMI/Height",
+                  "BMI/Ab","Weight/Height","Weight/Ab","Height/Ab",
+                  "BMI/Weight/Height","BMI/Weight/Ab","BMI/Ab/Height",
+                  "Ab/Weight/Height")
 
-ggplot(bodyfat_df,aes(x=ADIPOSITY,y=BODYFAT)) +
+r_sqr_df <- data.frame("Variables"=combinations,
+                       "r_squared"=c(rep(0,14)))
+
+# Create all single variate models
+bmi_lm <- lm(BODYFAT ~ ADIPOSITY,data = bodyfat_df)
+r_sqr_df[1,2] <- summary(bmi_lm)$adj.r.squared
+
+height_lm <- lm(BODYFAT ~ HEIGHT,data = bodyfat_df)
+r_sqr_df[2,2] <- summary(height_lm)$adj.r.squared
+
+abdomen_lm <- lm(BODYFAT ~ ABDOMEN,data = bodyfat_df)
+r_sqr_df[3,2] <- summary(abdomen_lm)$adj.r.squared
+
+weight_lm <- lm(BODYFAT ~ WEIGHT,data = bodyfat_df)
+r_sqr_df[4,2] <- summary(weight_lm)$adj.r.squared
+
+# Create all two variate models
+r_sqr_df[5,2] <- summary(lm(BODYFAT ~ ADIPOSITY+ WEIGHT,data = bodyfat_df))$adj.r.squared
+
+r_sqr_df[6,2] <- summary(lm(BODYFAT ~ ADIPOSITY+ HEIGHT,data = bodyfat_df))$adj.r.squared
+
+r_sqr_df[7,2] <- summary(lm(BODYFAT ~ ADIPOSITY+ ABDOMEN,data = bodyfat_df))$adj.r.squared
+
+r_sqr_df[8,2] <- summary(lm(BODYFAT ~ WEIGHT+ HEIGHT,data = bodyfat_df))$adj.r.squared
+
+r_sqr_df[9,2] <- summary(lm(BODYFAT ~ WEIGHT + ABDOMEN,data = bodyfat_df))$adj.r.squared
+
+r_sqr_df[10,2] <- summary(lm(BODYFAT ~ HEIGHT+ ABDOMEN,data = bodyfat_df))$adj.r.squared
+
+#Create all three variate models
+r_sqr_df[11,2] <- summary(lm(BODYFAT ~ ADIPOSITY+ WEIGHT + HEIGHT,data = bodyfat_df))$adj.r.squared
+
+r_sqr_df[12,2] <- summary(lm(BODYFAT ~ ADIPOSITY+ WEIGHT + ABDOMEN,data = bodyfat_df))$adj.r.squared
+
+r_sqr_df[13,2] <- summary(lm(BODYFAT ~ ADIPOSITY+ ABDOMEN + HEIGHT,data = bodyfat_df))$adj.r.squared
+
+r_sqr_df[14,2] <- summary(lm(BODYFAT ~ ABDOMEN + WEIGHT + HEIGHT,data = bodyfat_df))$adj.r.squared
+
+r_sqr_top_df = head(r_sqr_df[order(r_sqr_df$r_squared,decreasing=TRUE),],5)
+
+ggplot(data=r_sqr_top_df,aes(y=Variables,x=r_squared)) + 
+    geom_col(fill="cornflowerblue",width=.75) + 
+    theme(axis.text.y = element_text(angle = 25, vjust = 0.5,hjust=1)) +
+    coord_cartesian(xlim=c(0.7,.725)) +
+    xlab("Adjusted R-Squared") +
+    labs(title="Model Variables Adjusted R-Squared Comparison") +
+    geom_text(aes(label=round(r_squared,3),hjust=-.2))
+    
+
+    ggplot(bodyfat_df,aes(x=ADIPOSITY,y=BODYFAT)) +
   geom_point(size=2, shape=20,color='blue') +
   geom_smooth(method=lm, se=FALSE,color='black')
 
@@ -56,24 +114,16 @@ ggplot(bodyfat_df,aes(x=ABDOMEN,y=BODYFAT)) +
   geom_point(size=2, shape=20,color='blue') +
   geom_smooth(method=lm, se=FALSE,color='black')
 
-# Investigating the outlier in BMI and Abdomen
-ggplot(bodyfat_df, aes(x=ABDOMEN)) + geom_histogram()
 
-
-# Removing point 39 because it is an outlier with high leverage
-bodyfat_df <- bodyfat_df[bodyfat_df$ABDOMEN <140,]
 
 bodyfat_df$ABDOMEN_in <- bodyfat_df$ABDOMEN * 0.393701
 
 waist_abd_lm <- lm(BODYFAT ~ ABDOMEN_in + WEIGHT,data = bodyfat_df)
 summary(waist_abd_lm)
+plot(waist_abd_lm)
 
 ggplot(bodyfat_df,aes(x=ABDOMEN,y=BODYFAT)) +
   geom_point(size=2, shape=20,color='blue') +
   geom_smooth(method=lm, se=FALSE,color='black')
-
-qqnorm(bodyfat$)
-qqnorm(body, main = 'Q-Q Plot for Normality', xlab = 'Theoretical Dist',
-       ylab = 'Sample dist', col = 'steelblue')
 
 summary(bodyfat_df)
