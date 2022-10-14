@@ -6,6 +6,7 @@ library(ggplot2)
 
 #load data set  
 bodyfat_df <- read.csv("BodyFat.csv")
+which(bodyfat_df$HEIGHT == 29.5)
 
 # Look at head and tail
 head(bodyfat_df)
@@ -22,6 +23,8 @@ bodyfat_df$HEIGHT[bodyfat_df$HEIGHT == 29.5] <-
 
 # Removing point 39 because it is an outlier with high leverage
 bodyfat_df <- bodyfat_df[bodyfat_df$ABDOMEN <140,]
+
+bodyfat_df[39,]
 
 # Convert Abdomen measurement from centimeters to inches
 bodyfat_df$ABDOMEN <- bodyfat_df$ABDOMEN* 0.393701
@@ -84,3 +87,4 @@ predict.lm(model_2, test5)
 test6 <- list(WEIGHT = 75, ABDOMEN = 20)
 predict.lm(model_2, test6)
 #gave prediction of -5.88%
+
