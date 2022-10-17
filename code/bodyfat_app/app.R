@@ -9,10 +9,10 @@
 
 library(shiny)
 library(ggplot2)
-source("./model.R")
 
 # Helper functions
 valid_input <- function(abdomen, weight) {
+    
     # Verify positive numeric values
     if(abdomen <=0 || weight <= 0) {
         return(FALSE)
@@ -21,7 +21,7 @@ valid_input <- function(abdomen, weight) {
     return(is.numeric(abdomen) && is.numeric(weight))
 }
 
-model <- create_model()
+model <- readRDS(file="weight_abd_model.rda")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -50,7 +50,8 @@ ui <- fluidPage(
             span(textOutput("warning_input"), style="color:red"),
             span(textOutput("bodyfat_prediction"), style="font-size:200%"),
             span(textOutput("prediction_interval"), style="font-size:150%"),
-            plotOutput("comparison_hist")
+            plotOutput("comparison_hist"),
+            span(textOutput("contact_info"), style="color:gray")
         )
     )
 )
@@ -61,10 +62,13 @@ server <- function(input, output) {
     
     
     output$warning_input <- renderText({
+        validate(need(input$weight,message="Missing Weight Input"))
+        validate(need(input$abdomen,message="Missing Abdomen Input"))
+        
         validate(need(valid_input(input$abdomen, input$weight), ""))
         
         # Provide warning for extreme values that are outside of dataset
-        if(input$abdomen < 20 || input$abdomen > 65){
+        if(input$abdomen < 20 || input$abdomen > 50){
             paste("Input values outside of dataset range, potentially inaccurate results")
         } else if(input$weight < 100 || input$weight > 275){
             paste("Input values outside of dataset range, potentially inaccurate results")
@@ -74,6 +78,8 @@ server <- function(input, output) {
     })
     
     output$bodyfat_prediction <- renderText({
+        req(input$abdomen)
+        req(input$weight)
         validate(
           need(valid_input(input$abdomen, input$weight), 
                "Abdomen and Weight need to be postive numeric values."))
@@ -85,6 +91,8 @@ server <- function(input, output) {
     })
     
     output$prediction_interval <- renderText({
+        req(input$abdomen)
+        req(input$weight)
         validate(need(valid_input(input$abdomen, input$weight),""))
         # Generate Bodyfat estimate based on values
         input_df <- data.frame("ABDOMEN"=input$abdomen,"WEIGHT" = input$weight)
@@ -97,6 +105,8 @@ server <- function(input, output) {
     })
     
     output$comparison_hist <- renderPlot({
+        req(input$abdomen)
+        req(input$weight)
         validate(need(valid_input(input$abdomen, input$weight),""))
         bodyfat_ranges <- data.frame(Ranges= c("Obsese", "Average", "Fit","Athletic","Essential Fat"),
                                      Proportion=c(10,7,4,7,6),
@@ -124,6 +134,12 @@ server <- function(input, output) {
                      vjust=-1) +
             theme(axis.text.x = element_blank())
     })
+    
+    output$contact_info <- renderText({
+        paste("App maintained by Oliver Hammond. Contact Oliver Hammond
+              (ohammond@wisc.edu) for any question or bugs. ")
+    })
+    
 }
 
 # Run the application 
