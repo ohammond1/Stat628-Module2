@@ -78,6 +78,7 @@ r_sqr_df[12,2] <- summary(lm(BODYFAT ~ ADIPOSITY+ WEIGHT + ABDOMEN,data = bodyfa
 r_sqr_df[13,2] <- summary(lm(BODYFAT ~ ADIPOSITY+ ABDOMEN + HEIGHT,data = bodyfat_df))$adj.r.squared
 
 r_sqr_df[14,2] <- summary(lm(BODYFAT ~ ABDOMEN + WEIGHT + HEIGHT,data = bodyfat_df))$adj.r.squared
+summary(lm(BODYFAT ~ ABDOMEN + WEIGHT + HEIGHT,data = bodyfat_df))
 
 r_sqr_top_df = head(r_sqr_df[order(r_sqr_df$r_squared,decreasing=TRUE),],5)
 
@@ -127,3 +128,29 @@ ggplot(bodyfat_df,aes(x=ABDOMEN,y=BODYFAT)) +
   geom_smooth(method=lm, se=FALSE,color='black')
 
 summary(bodyfat_df)
+
+library(rgl)
+library(magick)
+
+colors <- c("royalblue1", "darkcyan", "oldlace")
+
+# Static chart
+plot3d( bodyfat_df$ABDOMEN_in, bodyfat_df$WEIGHT, bodyfat_df$BODYFAT, type = "s", radius = .2 )
+
+# We can indicate the axis and the rotation velocity
+play3d( spin3d( axis = c(0, 0, 1), rpm = 3), duration = 30 )
+
+# Save like gif
+movie3d(
+    movie="3dAnimatedScatterplot", 
+    spin3d( axis = c(0, 0, 1), rpm = 7),
+    duration = 30, 
+    dir = "~/Desktop",
+    type = "gif", 
+    clean = TRUE
+)
+
+
+library(scatterplot3d)
+
+scatter_plt <- with(bodyfat_df, scatterplot3d(ABDOMEN_in, WEIGHT, BODYFAT, grid=FALSE, angle=45))

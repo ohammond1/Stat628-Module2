@@ -1,7 +1,7 @@
 
 
 create_model <- function() {
-  bodyfat_df <- read.csv("../../data/BodyFat.csv")
+  bodyfat_df <- read.csv("./BodyFat.csv")
 
   # This is still below 0 so will have to drop this row
   bodyfat_df <- bodyfat_df[bodyfat_df$BODYFAT > 0,]
